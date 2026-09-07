@@ -4,8 +4,9 @@
 
 #include "scanner.h"
 #include "utils.h"
+#include "organizer.h"
 
-#define VERSION "0.2.0"
+#define VERSION "1.0.0"
 #define NAME_WIDTH 32
 #define CATEGORY_COUNT 5
 
@@ -17,7 +18,8 @@ static void print_help(void)
         "  messyfolder <directory>\n\n"
         "Options:\n"
         "  -h, --help       Show this help message\n"
-        "  -v, --version    Show version information\n",
+        "  -v, --version    Show version information\n"
+        "  -o, --organize   Organize files into category folders\n",
         VERSION
     );
 }
@@ -75,7 +77,7 @@ static int get_category_index(const char *category)
 
 int main(int argc, char *argv[])
 {
-    if (argc != 2) {
+    if (argc < 2 || argc > 3) {
         print_help();
         return 1;
     }
@@ -94,6 +96,18 @@ int main(int argc, char *argv[])
     ) {
         print_version();
         return 0;
+    }
+
+    int organize = 0;
+
+    if (argc == 3) {
+
+        if ((strcmp(argv[2], "--organize") == 0)||(strcmp(argv[2], "-o") == 0)) {
+            organize = 1;
+        } else {
+            printf("Unknown option: %s\n", argv[2]);
+            return 1;
+        }
     }
 
     FileInfo *files = NULL;
@@ -189,11 +203,12 @@ int main(int argc, char *argv[])
         sizeof(total_buffer)
     );
 
-    printf(
-        "\n  Total: %d files    %s\n",
-        count,
-        total_buffer
-    );
+    if (organize) {
+       int moved = organize_files(files, count);
+        printf("\n  Organized %d files    %s\n", moved, total_buffer);
+    } else{
+        printf( "\n  Total: %d files    %s\n", count, total_buffer);
+    }
 
     printf("\n");
 

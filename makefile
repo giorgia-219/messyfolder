@@ -3,7 +3,7 @@ CFLAGS = -Wall -Wextra -std=c11
 
 TARGET = messyfolder
 
-SRC = src/main.c src/scanner.c src/utils.c
+SRC = src/main.c src/scanner.c src/utils.c src/organizer.c
 OBJ = $(SRC:.c=.o)
 
 $(TARGET): $(OBJ)
