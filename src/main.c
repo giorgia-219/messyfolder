@@ -5,8 +5,9 @@
 #include "scanner.h"
 #include "utils.h"
 #include "organizer.h"
+#include "duplicates.h"
 
-#define VERSION "1.0.0"
+#define VERSION "1.1.0"
 #define NAME_WIDTH 32
 #define CATEGORY_COUNT 5
 
@@ -19,7 +20,8 @@ static void print_help(void)
         "Options:\n"
         "  -h, --help       Show this help message\n"
         "  -v, --version    Show version information\n"
-        "  -o, --organize   Organize files into category folders\n",
+        "  -o, --organize   Organize files into category folders\n"
+        "  -d, --duplicates Find duplicates\n",
         VERSION
     );
 }
@@ -99,13 +101,18 @@ int main(int argc, char *argv[])
     }
 
     int organize = 0;
+    int duplicates = 0;
+    
+    for (int i = 2; i < argc; i++) {
 
-    if (argc == 3) {
-
-        if ((strcmp(argv[2], "--organize") == 0)||(strcmp(argv[2], "-o") == 0)) {
+        if (strcmp(argv[i], "--organize") == 0 || strcmp(argv[i], "-o") == 0) {
             organize = 1;
-        } else {
-            printf("Unknown option: %s\n", argv[2]);
+        }
+        else if (strcmp(argv[i], "--duplicates") == 0 || strcmp(argv[i], "-d") == 0) {
+            duplicates = 1;
+        }
+        else {
+            printf("Unknown option: %s\n", argv[i]);
             return 1;
         }
     }
@@ -197,11 +204,22 @@ int main(int argc, char *argv[])
 
     char total_buffer[32];
 
-    format_size(
-        total_size,
-        total_buffer,
-        sizeof(total_buffer)
-    );
+    format_size(total_size, total_buffer, sizeof(total_buffer));
+
+    if (duplicates) {
+        printf("\n");
+        printf("  ─────────────────────────────────────────────────────\n");
+        printf("  DUPLICATES\n");
+
+        int groups = find_duplicates(files, count);
+
+        if (groups == 0) {
+            printf("  No duplicates found.\n");
+        }
+        else {
+            printf("\n  Found %d duplicate groups.\n", groups);
+        }
+    }
 
     if (organize) {
        int moved = organize_files(files, count);
