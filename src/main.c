@@ -6,9 +6,8 @@
 #include "utils.h"
 #include "organizer.h"
 #include "duplicates.h"
-#include "large_files.h"
 
-#define VERSION "1.2.0"
+#define VERSION "1.1.0"
 #define NAME_WIDTH 32
 #define CATEGORY_COUNT 5
 
@@ -22,8 +21,7 @@ static void print_help(void)
         "  -h, --help       Show this help message\n"
         "  -v, --version    Show version information\n"
         "  -o, --organize   Organize files into category folders\n"
-        "  -d, --duplicates Find duplicates\n"
-        "  -l, --large <MB> Find files larger than the specified size",
+        "  -d, --duplicates Find duplicates\n",
         VERSION
     );
 }
@@ -81,7 +79,7 @@ static int get_category_index(const char *category)
 
 int main(int argc, char *argv[])
 {
-    if (argc < 2) {
+    if (argc < 2 || argc > 3) {
         print_help();
         return 1;
     }
@@ -104,23 +102,16 @@ int main(int argc, char *argv[])
 
     int organize = 0;
     int duplicates = 0;
-    int large = 0;
-    long long large_threshold = 0;
     
     for (int i = 2; i < argc; i++) {
 
         if (strcmp(argv[i], "--organize") == 0 || strcmp(argv[i], "-o") == 0) {
             organize = 1;
-        } else if (strcmp(argv[i], "--duplicates") == 0 || strcmp(argv[i], "-d") == 0) {
+        }
+        else if (strcmp(argv[i], "--duplicates") == 0 || strcmp(argv[i], "-d") == 0) {
             duplicates = 1;
-        } else if (strcmp(argv[i], "--large") == 0 || strcmp(argv[i], "-l") == 0) {
-            if (i + 1 >= argc) {
-                printf("Missing size for --large\n");
-                return 1;
-            }
-            large = 1;
-            large_threshold = atoll(argv[++i]) * 1024LL * 1024LL;
-        } else {
+        }
+        else {
             printf("Unknown option: %s\n", argv[i]);
             return 1;
         }
@@ -227,25 +218,6 @@ int main(int argc, char *argv[])
         }
         else {
             printf("\n  Found %d duplicate groups.\n", groups);
-        }
-    }
-
-    if (large) {
-        printf("\n");
-        printf("  LARGE FILES\n");
-        printf("  ─────────────────────────────────────────────────────\n");
-        printf("  Files larger than %lld MB\n\n", large_threshold / (1024LL * 1024LL));
-
-        int large_count = find_large_files(files, count, large_threshold);
-
-        if (large_count < 0) {
-            printf("  Could not allocate memory.\n");
-        }
-        else if (large_count == 0) {
-            printf("  No large files found.\n");
-        }
-        else {
-            printf("\n Found %d large files.\n", large_count);
         }
     }
 
