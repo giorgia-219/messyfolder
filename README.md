@@ -14,7 +14,8 @@ Then point MessyFolder to a directory e.g. `./messyfolder ~/Downloads`
 `-h --help` show help  
 `-v --version` show version  
 `-o --organize` organize files in folders based on extension  
-`-d --duplicates` find duplicate files  
+`-d --duplicates` find duplicate files 
+`-l --large <MB>` find files larger than the specified size 
 <br/>
 More features are on the way!
 
@@ -22,7 +23,7 @@ More features are on the way!
 - [x] Directory scanning
 - [x] File organization
 - [x] Duplicate detection
-- [ ] Large file finder
+- [x] Large file finder
 - [ ] Safe duplicate removal
 - [ ] Recursive duplicate scanning
 - [ ] File name collision handling
