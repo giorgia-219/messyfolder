@@ -5,8 +5,9 @@
 #include "scanner.h"
 #include "utils.h"
 
-#define VERSION "0.1.0"
+#define VERSION "0.2.0"
 #define NAME_WIDTH 32
+#define CATEGORY_COUNT 5
 
 static void print_help(void)
 {
@@ -35,15 +36,6 @@ static void print_filename(const char *name)
         return;
     }
 
-    /*
-     * Keep the file extension visible when possible.
-     *
-     * Example:
-     * very-long-file-name-that-is-too-long.pdf
-     * becomes:
-     * very-long-file-name-that-is...pdf
-     */
-
     const char *extension = strrchr(name, '.');
 
     if (extension != NULL && strlen(extension) < NAME_WIDTH - 4) {
@@ -55,6 +47,30 @@ static void print_filename(const char *name)
     else {
         printf("%.*s...", NAME_WIDTH - 3, name);
     }
+}
+
+typedef struct {
+    int count;
+    long long total_size;
+} CategorySummary;
+
+const char *categories[CATEGORY_COUNT] = {
+    "Images",
+    "Documents",
+    "Videos",
+    "Archives",
+    "Other"
+};
+
+static int get_category_index(const char *category)
+{
+    for (int i = 0; i < CATEGORY_COUNT; i++) {
+        if (strcmp(category, categories[i]) == 0) {
+            return i;
+        }
+    }
+
+    return CATEGORY_COUNT - 1;
 }
 
 int main(int argc, char *argv[])
@@ -86,6 +102,20 @@ int main(int argc, char *argv[])
 
     if (count < 0) {
         return 1;
+    }
+
+    CategorySummary summary[CATEGORY_COUNT] = {0};
+
+    for (int i = 0; i < count; i++) {
+    int category_index = get_category_index(files[i].category);
+
+    summary[category_index].count++;
+    summary[category_index].total_size += files[i].size;
+    }
+
+    long long total_size = 0;
+    for (int i = 0; i < count; i++) {
+        total_size += files[i].size;
     }
 
     printf("\n");
@@ -130,7 +160,44 @@ int main(int argc, char *argv[])
 
     printf("\n");
 
-    free(files);
+    printf("  ─────────────────────────────────────────────────────\n");
+    printf("  SUMMARY\n\n");
 
-    return 0;
-}
+    for (int i = 0; i < CATEGORY_COUNT; i++) {
+
+        char size_buffer[32];
+
+        format_size(
+            summary[i].total_size,
+            size_buffer,
+            sizeof(size_buffer)
+        );
+
+        printf(
+            "  %-12s %5d files    %10s\n",
+            categories[i],
+            summary[i].count,
+            size_buffer
+        );
+    }
+
+    char total_buffer[32];
+
+    format_size(
+        total_size,
+        total_buffer,
+        sizeof(total_buffer)
+    );
+
+    printf(
+        "\n  Total: %d files    %s\n",
+        count,
+        total_buffer
+    );
+
+    printf("\n");
+
+        free(files);
+
+        return 0;
+    }
